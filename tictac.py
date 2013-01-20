@@ -1,6 +1,6 @@
 import random
 from abc import ABCMeta, abstractmethod
-import pdb
+import pdb, itertools
 
 class Board:
     """ The board class contains a 2d array initialized to blanks
@@ -74,12 +74,54 @@ class NiceBot (Player):
         if (r, c) != (-1, -1):
             return r, c
 
-        while True:
-            r,c = random.choice(range(b.boardSize)),random.choice(range(b.boardSize))
-            if b[r][c] == ' ':
-                return r, c                       
+        if self.check_empty(b): #if this is the first move, return top left pos
+            return 0, 0
+        else:
+            if b[1][1] == ' ': #if center is empty, fill that first
+                return 1, 1
+            else:
+                if b[1][1] == self.symbol and self.get_empty_noncorner(b) != (-1, -1): #if center is ours and non corner is free put there
+                    return self.get_empty_noncorner(b)
+                    
+                if self.get_empty_corner(b) != (-1, -1): #if corner is empty, put there
+                    return self.get_empty_corner(b)
+                
+                #if nothing else works, just go with a random value
+                while True:
+                    r,c = random.choice(range(b.boardSize)),random.choice(range(b.boardSize))
+                    if b[r][c] == ' ':
+                        return r,c    
 
+    def get_empty_corner(self, b):
+        """ Return the first empty corner of the board
+        """
+        corners = list(itertools.product([0,2],[0,2]))
+        for corner in corners:
+            if b[corner[0]][corner[1]] == ' ':
+                return corner
+        return -1, -1
+                
+    def get_empty_noncorner(self, b):
+        """ Returns the first empty non corner of the board
+        """
+        if b[0][1] == ' ' and b[2][1] == ' ':
+            return 0, 1
+        if b[1][0] == ' ' and b[1][2] == ' ':
+            return 1, 0
+        return -1, -1
+        
+    def check_empty(self, b):
+        """ Checks whether the board is empty or not
+        """
+        for i in b:
+            if i.count(' ') != b.boardSize:
+                return False
+        return True
+        
     def check_for_finish(self, b, symbol):
+        """ Checks whether just one more move can finish the game,
+        returns that move
+        """
         isBreak = False
         for i in range(b.boardSize): #checking all rows
             if (b[i].count(symbol), b[i].count(' ')) == (2, 1):
