@@ -35,7 +35,7 @@ class Person:
 
     def getMove(self):
         r,c = raw_input("Enter move for "+self.name+" : ").split()
-        return r,c
+        return int(r),int(c)
 
 class Game:
 
@@ -45,12 +45,12 @@ class Game:
         self.p2 = p2
         self.p1.symbol = 'X'
         self.p2.symbol = 'O'
-        self.currentPlayer = self.p1
+        self.currentPlayer = random.choice([p1, p2])
+        print self.currentPlayer.name+" starts the game!\n"
 
     def play(self):
         while True:
-            r, c = self.currentPlayer.getMove()
-            r, c = int(r), int(c)
+            r,c = self.currentPlayer.getMove()
             if self.b.put(self.currentPlayer.symbol, r, c):
                 print self.b
                 if self.gameOver(r, c):
@@ -103,9 +103,6 @@ if __name__ == "__main__":
     name2 = raw_input("Enter player 2's name: ")
     p1 = Person(name1)
     p2 = Person(name2)
-    if random.choice([True, False]):
-        p1, p2 = p2, p1
-    print p1.name+" starts the game!\n"
     g = Game(p1, p2)
     g.play()
 
