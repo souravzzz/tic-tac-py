@@ -27,7 +27,7 @@ class Board:
             str += '\n'
         return str
 
-class Person:
+class Player:
 
     def __init__(self, name, bot):
         self.symbol = ' '
@@ -109,8 +109,8 @@ class Game:
         return r==c or (r,c) in cells
 
 if __name__ == "__main__":
-    p1 = Person(raw_input("Enter player 1's name: "), True)
-    p2 = Person(raw_input("Enter player 2's name: "), True)
+    p1 = Player(raw_input("Enter player 1's name: "), True)
+    p2 = Player(raw_input("Enter player 2's name: "), True)
     g = Game(p1, p2)
     g.play()
 
