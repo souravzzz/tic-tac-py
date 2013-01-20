@@ -29,24 +29,24 @@ class Board:
 
 class Player:
 
-    def __init__(self, name, bot):
+    def __init__(self, name):
         self.symbol = ' '
         self.name = name
-        self.bot = bot
 
     def getMove(self, b):
-        if self.bot:
-            return self.getMoveAsBot(b)
-        else:
-            return self.getMoveAsHuman()
+        pass
 
-    def getMoveAsBot(self, b):
+class Bot (Player):
+
+    def getMove(self, b):
         while True:
             r,c = random.choice([0,1,2]),random.choice([0,1,2])
             if b[r][c] == ' ':
                 return r,c
 
-    def getMoveAsHuman(self):
+class Human (Player):
+
+    def getMove(self, b):
         r,c = raw_input("Enter move for "+self.name+" : ").split()
         return int(r),int(c)
 
@@ -109,8 +109,8 @@ class Game:
         return r==c or (r,c) in cells
 
 if __name__ == "__main__":
-    p1 = Player(raw_input("Enter player 1's name: "), True)
-    p2 = Player(raw_input("Enter player 2's name: "), True)
+    p1 = Bot(raw_input("Enter player 1's name: "))
+    p2 = Bot(raw_input("Enter player 2's name: "))
     g = Game(p1, p2)
     g.play()
 
