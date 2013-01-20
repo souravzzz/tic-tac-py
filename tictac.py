@@ -93,16 +93,11 @@ class Game:
 
     def needDiag(self, r, c):
         cells = [(0,2),(2,0)]
-        if r==c or (r,c) in cells:
-            return True
-        else:
-            return False
+        return r==c or (r,c) in cells
 
 if __name__ == "__main__":
-    name1 = raw_input("Enter player 1's name: ")
-    name2 = raw_input("Enter player 2's name: ")
-    p1 = Person(name1)
-    p2 = Person(name2)
+    p1 = Person(raw_input("Enter player 1's name: "))
+    p2 = Person(raw_input("Enter player 2's name: "))
     g = Game(p1, p2)
     g.play()
 
