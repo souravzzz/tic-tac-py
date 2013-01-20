@@ -104,7 +104,12 @@ class Bot (Player):
         if (d.count(symbol), d.count(' ')) == (2, 1): 
             return (b.boardSize-1-d.index(' '), d.index(' ')) #if found return            
 
-        return (-1, -1) 
+        return False 
+
+    def getForkingMove(self, b, symbol):
+        """ Returns a move if it can crate a fork
+        """
+        pass
 
     def getRandomMove(self, b):
         coords = range(b.boardSize)
@@ -122,24 +127,30 @@ class NiceBot (Bot):
 
     def getMove(self, b):
         #checking whether there are any nearly finished row/col/diag so as to put a single mark to win
-        (r, c) = self.getFinishingMove(b, self.symbol)        
-        if (r, c) != (-1, -1):
-            return r, c
+        move = self.getFinishingMove(b, self.symbol)        
+        if move:
+            return move
         
-        opponentSymbol = self.getOpponentSymbol(b)
         #checking whether opposition is nearly finished and therefore stopping him/her
-        (r, c) = self.getFinishingMove(b, opponentSymbol)
-        if (r, c) != (-1, -1):
-            return r, c
+        opponentSymbol = self.getOpponentSymbol(b)
+        move = self.getFinishingMove(b, opponentSymbol)
+        if move:
+            return move
 
-        if b[1][1] == ' ': #if center is empty, fill that first
+        #if center is empty, fill that first
+        if b[1][1] == ' ':
             return 1, 1
         else:
-            if b[1][1] == self.symbol and self.getEmptyNonCorner(b) != (-1, -1): #if center is ours and non corner is free put there
-                return self.getEmptyNonCorner(b)
-                    
-            if self.getEmptyCorner(b) != (-1, -1): #if corner is empty, put there
-                return self.getEmptyCorner(b)
+            #if center is ours and non corner is free put there
+            if b[1][1] == self.symbol:
+                move = self.getEmptyNonCorner(b)
+                if move:
+                    return move 
+
+            #if corner is empty, put there
+            move = self.getEmptyCorner(b)
+            if move:
+                return move
                 
         #if nothing else works, just go with a random value
         return self.getRandomMove(b)
@@ -151,7 +162,7 @@ class NiceBot (Bot):
         for corner in corners:
             if b[corner[0]][corner[1]] == ' ':
                 return corner
-        return -1, -1
+        return False
                 
     def getEmptyNonCorner(self, b):
         """ Returns the first empty non corner of the board
@@ -160,27 +171,29 @@ class NiceBot (Bot):
             return 0, 1
         if b[1][0] == ' ' and b[1][2] == ' ':
             return 1, 0
-        return -1, -1
+        return False
 
 class MyBot (Bot):
 
     def getMove(self, b):
         #checking whether there are any nearly finished row/col/diag so as to put a single mark to win
-        (r, c) = self.getFinishingMove(b, self.symbol)        
-        if (r, c) != (-1, -1):
-            return r, c
+        move = self.getFinishingMove(b, self.symbol)        
+        if move:
+            return move
         
-        opponentSymbol = self.getOpponentSymbol(b)
         #checking whether opposition is nearly finished and therefore stopping him/her
-        (r, c) = self.getFinishingMove(b, opponentSymbol)
-        if (r, c) != (-1, -1):
-            return r, c
+        opponentSymbol = self.getOpponentSymbol(b)
+        move = self.getFinishingMove(b, opponentSymbol)
+        if move:
+            return move
 
-        if b.get(self.getCenter(b)) == ' ': #if center is empty, fill that first
+        #if center is empty, fill that first
+        if b.get(self.getCenter(b)) == ' ':
             return self.getCenter(b)
         else:
-                    
-            if self.getRandomEmptyCorner(b) != (-1, -1): #if corner is empty, put there
+            #if corner is empty, put there
+            move = self.getRandomEmptyCorner(b)
+            if move: 
                 return self.getRandomEmptyCorner(b)
                 
         #if nothing else works, just go with a random value
@@ -194,7 +207,7 @@ class MyBot (Bot):
         emptyCorners = [corner for corner in corners if b.get(corner) == ' ']
         if len(emptyCorners)>0:
             return random.choice(emptyCorners)
-        return -1, -1
+        return False
                 
 class Human (Player):
 

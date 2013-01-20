@@ -2,7 +2,7 @@ tic-tac-py
 ==========
 - - -
 
-tic-tac-py is a very simple implementation of the popular game, tic-tact-toe.
+tic-tac-py is a very simple implementation of the popular game, tic-tac-toe.
 
 Currently, you can't play it against the computer, I am working on this feature, see [Branch AI](https://github.com/souravzzz/tic-tac-py/tree/ai).
 
