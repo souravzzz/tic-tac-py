@@ -13,6 +13,12 @@ class Board:
         for i in range(size):
             self.board.append([' ' for j in range(size)])
 
+    def get(self, t):
+        return self.board[t[0]][t[1]]
+
+    def isEmpty(self, t):
+        return self.get(t) == ' '
+
     def put(self, s, r, c):
         if self.board[r][c] == ' ':
             self.board[r][c] = s
@@ -45,54 +51,100 @@ class Player:
     def getMove(self, b):
         pass
 
-class StupidBot (Player):
-
-    def getMove(self, b):
-        while True:
-            r,c = random.choice([0,1,2]),random.choice([0,1,2])
-            if b[r][c] == ' ':
-                return r,c
-
-            
-class NiceBot (Player):
-    def getMove(self, b):
-        #checking whether there are any nearly finished row/col/diag so as to put a single mark to win
-        (r, c) = self.check_for_finish(b, self.symbol)        
-        if (r, c) != (-1, -1):
-            return r, c
-        
+class Bot (Player):
+    """ Bot class contains the methods all bots can use
+    """
+    __metaclass__ = ABCMeta
+    def getOpponentSymbol(self, b):
         #find the symbol of opponent
-        symbol_opponent = ''
+        opponentSymbol = ''
         for i in b:
             t = [j for j in i if j != self.symbol and j != ' ']
             if len(t) > 0:
-                symbol_opponent = t[0] 
+                opponentSymbol = t[0] 
                 break
+        return opponentSymbol
                 
+    def isBoardEmpty(self, b):
+        """ Checks whether the board is empty or not
+        """
+        for i in b:
+            if i.count(' ') != b.boardSize:
+                return False
+        return True
+
+    def getCenter(self, b):
+        return int(b.boardSize/2),int(b.boardSize/2)
+
+    def getFinishingMove(self, b, symbol):
+        """ Checks whether just one more move can finish the game,
+        returns that move
+        """
+        isBreak = False
+        for i in range(b.boardSize): #checking all rows
+            if (b[i].count(symbol), b[i].count(' ')) == (2, 1): 
+                isBreak = True
+                break
+        if(isBreak): #if found return
+            return (i, b[i].index(' '))
+        c = []
+        for i in range(b.boardSize): #checking all columns
+            c = [b[j][i] for j in range(b.boardSize)]
+            if (c.count(symbol), c.count(' ')) == (2, 1): 
+                isBreak = True
+                break
+        if(isBreak): #if found return
+            return (c.index(' '), i)
+
+        d = [b[i][i] for i in range(b.boardSize)] #checking 1st diagonal
+        if (d.count(symbol), d.count(' ')) == (2, 1): 
+            return (d.index(' '), d.index(' ')) #if found return
+
+        d = [b[b.boardSize-1-i][i] for i in range(b.boardSize)] #checking 2nd diagonal
+        if (d.count(symbol), d.count(' ')) == (2, 1): 
+            return (b.boardSize-1-d.index(' '), d.index(' ')) #if found return            
+
+        return (-1, -1) 
+
+    def getRandomMove(self, b):
+        coords = range(b.boardSize)
+        while True:
+            r,c = random.choice(coords),random.choice(coords)
+            if b[r][c] == ' ':
+                return r,c
+
+class StupidBot (Bot):
+
+    def getMove(self, b):
+        return self.getRandomMove(b)
+
+class NiceBot (Bot):
+
+    def getMove(self, b):
+        #checking whether there are any nearly finished row/col/diag so as to put a single mark to win
+        (r, c) = self.getFinishingMove(b, self.symbol)        
+        if (r, c) != (-1, -1):
+            return r, c
+        
+        opponentSymbol = self.getOpponentSymbol(b)
         #checking whether opposition is nearly finished and therefore stopping him/her
-        (r, c) = self.check_for_finish(b, symbol_opponent)
+        (r, c) = self.getFinishingMove(b, opponentSymbol)
         if (r, c) != (-1, -1):
             return r, c
 
-        if self.check_empty(b): #if this is the first move, return top left pos
-            return 0, 0
+        if b[1][1] == ' ': #if center is empty, fill that first
+            return 1, 1
         else:
-            if b[1][1] == ' ': #if center is empty, fill that first
-                return 1, 1
-            else:
-                if b[1][1] == self.symbol and self.get_empty_noncorner(b) != (-1, -1): #if center is ours and non corner is free put there
-                    return self.get_empty_noncorner(b)
+            if b[1][1] == self.symbol and self.getEmptyNonCorner(b) != (-1, -1): #if center is ours and non corner is free put there
+                return self.getEmptyNonCorner(b)
                     
-                if self.get_empty_corner(b) != (-1, -1): #if corner is empty, put there
-                    return self.get_empty_corner(b)
+            if self.getEmptyCorner(b) != (-1, -1): #if corner is empty, put there
+                return self.getEmptyCorner(b)
                 
-                #if nothing else works, just go with a random value
-                while True:
-                    r,c = random.choice(range(b.boardSize)),random.choice(range(b.boardSize))
-                    if b[r][c] == ' ':
-                        return r,c    
+        #if nothing else works, just go with a random value
+        return self.getRandomMove(b)
 
-    def get_empty_corner(self, b):
+    def getEmptyCorner(self, b):
         """ Return the first empty corner of the board
         """
         corners = list(itertools.product([0,2],[0,2]))
@@ -101,7 +153,7 @@ class NiceBot (Player):
                 return corner
         return -1, -1
                 
-    def get_empty_noncorner(self, b):
+    def getEmptyNonCorner(self, b):
         """ Returns the first empty non corner of the board
         """
         if b[0][1] == ' ' and b[2][1] == ' ':
@@ -109,45 +161,41 @@ class NiceBot (Player):
         if b[1][0] == ' ' and b[1][2] == ' ':
             return 1, 0
         return -1, -1
+
+class MyBot (Bot):
+
+    def getMove(self, b):
+        #checking whether there are any nearly finished row/col/diag so as to put a single mark to win
+        (r, c) = self.getFinishingMove(b, self.symbol)        
+        if (r, c) != (-1, -1):
+            return r, c
         
-    def check_empty(self, b):
-        """ Checks whether the board is empty or not
+        opponentSymbol = self.getOpponentSymbol(b)
+        #checking whether opposition is nearly finished and therefore stopping him/her
+        (r, c) = self.getFinishingMove(b, opponentSymbol)
+        if (r, c) != (-1, -1):
+            return r, c
+
+        if b.get(self.getCenter(b)) == ' ': #if center is empty, fill that first
+            return self.getCenter(b)
+        else:
+                    
+            if self.getRandomEmptyCorner(b) != (-1, -1): #if corner is empty, put there
+                return self.getRandomEmptyCorner(b)
+                
+        #if nothing else works, just go with a random value
+        return self.getRandomMove(b)
+
+    def getRandomEmptyCorner(self, b):
+        """ Return a random empty corner of the board
         """
-        for i in b:
-            if i.count(' ') != b.boardSize:
-                return False
-        return True
-        
-    def check_for_finish(self, b, symbol):
-        """ Checks whether just one more move can finish the game,
-        returns that move
-        """
-        isBreak = False
-        for i in range(b.boardSize): #checking all rows
-            if (b[i].count(symbol), b[i].count(' ')) == (2, 1):
-                isBreak = True
-                break
-        if(isBreak): #if found return
-            return (i, b[i].index(' '))
-        c = []
-        for i in range(b.boardSize): #checking all columns
-            c = [b[j][i] for j in range(b.boardSize)]
-            if (c.count(symbol), c.count(' ')) == (2, 1):
-                isBreak = True
-                break
-        if(isBreak): #if found return
-            return (c.index(' '), i)
-
-        d = [b[i][i] for i in range(b.boardSize)] #checking 1st diagonal
-        if (d.count(symbol), d.count(' ')) == (2, 1):
-            return (d.index(' '), d.index(' ')) #if found return
-
-        d = [b[b.boardSize-1-i][i] for i in range(b.boardSize)] #checking 2nd diagonal
-        if (d.count(symbol), d.count(' ')) == (2, 1):
-            return (b.boardSize-1-d.index(' '), d.index(' ')) #if found return            
-
-        return (-1, -1)
-        
+        maxIndex = b.boardSize - 1 
+        corners = list(itertools.product([0,maxIndex],[0,maxIndex]))
+        emptyCorners = [corner for corner in corners if b.get(corner) == ' ']
+        if len(emptyCorners)>0:
+            return random.choice(emptyCorners)
+        return -1, -1
+                
 class Human (Player):
 
     def getMove(self, b):
@@ -217,7 +265,7 @@ class Game:
         return r==c or (r+c+1)==self.b.boardSize
 
 if __name__ == "__main__":
-    p1 = Human(raw_input("Enter player 1's name: "))
+    p1 = MyBot(raw_input("Enter player 1's name: "))
     p2 = NiceBot(raw_input("Enter player 2's name: "))    
     g = Game(p1, p2)
     g.play()
