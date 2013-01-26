@@ -235,9 +235,9 @@ class Game:
                 print self.b
                 if self.gameOver(r, c):
                     if(self.gameWon(r, c)):
-                        print "!!~~WINNER~~!!\n"+self.currentPlayer.name+"\n"
+                        return self.currentPlayer.name
                     else:
-                        print "..Match Drawn.."
+                        return False
                     break
                 self.currentPlayer = self.currentPlayer==self.p1 and self.p2 or self.p1
             else:
@@ -279,7 +279,11 @@ class Game:
 
 if __name__ == "__main__":
     p1 = MyBot(raw_input("Enter player 1's name: "))
-    p2 = NiceBot(raw_input("Enter player 2's name: "))    
+    p2 = StupidBot(raw_input("Enter player 2's name: "))    
     g = Game(p1, p2)
-    g.play()
+    winner = g.play()
+    if winner:
+        print "!!~~WINNER~~!!\n"+winner+"\n"
+    else:
+        print "..Match Drawn.."
 
